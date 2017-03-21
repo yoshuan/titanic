@@ -5,15 +5,11 @@ Created on Tue Mar 07 10:52:54 2017
 @author: HP
 """
 
-import numpy as np
 import pandas as pd
 from sklearn.preprocessing import LabelEncoder
-import re
-import math
 from collections import Counter
 import os
 from sklearn import cross_validation
-import matplotlib.pyplot as plt
 
 ###
 #Import Data
@@ -23,10 +19,10 @@ data = pd.read_csv('train.csv')
 #X = data.drop('Survived', axis = 1)
 #y = data['Survived']
 
+
 ###
 #Data Preprocessing
 ###
-
 
 #Extract Title from 'Name'
 data['Title'] = data['Name'].str.extract('\s([A-Z][a-z]+\.)\s', expand = True)
@@ -80,18 +76,3 @@ data = data.drop(['Name','Ticket','Cabin','PassengerId'], axis = 1)
 #Train Test Split
 train, intermediate_set = cross_validation.train_test_split(data, train_size=0.6, test_size=0.4)
 cv, test = cross_validation.train_test_split(intermediate_set, train_size=0.5, test_size=0.5)
-
-
-###
-#Data Modeling
-###
-
-
-
-
-
-
-
-
-
-

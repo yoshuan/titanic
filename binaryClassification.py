@@ -6,18 +6,16 @@ Created on Tue Mar 07 10:52:54 2017
 """
 
 import pandas as pd
-from sklearn.preprocessing import LabelEncoder
+from sklearn.preprocessing import LabelEncoder, OneHotEncoder 
 from collections import Counter
 import os
-from sklearn import cross_validation
+from sklearn.cross_validation import train_test_split
 
 ###
 #Import Data
 ###
 os.chdir('D:\\learnPython\\Titanic')
 data = pd.read_csv('train.csv')
-#X = data.drop('Survived', axis = 1)
-#y = data['Survived']
 
 
 ###
@@ -66,13 +64,30 @@ data['Deck'].fillna('Unknown', inplace = True)
 
 #Encode
 le = LabelEncoder()
-data['Sex'] = le.fit_transform(data['Sex'])
-data['Embarked'] = le.fit_transform(data['Embarked'])
-data['Title'] = le.fit_transform(data['Title'])
-data['Deck'] = le.fit_transform(data['Deck'])
+columns = ['Sex','Embarked','Title','Deck']
+for col in columns:
+    data[col] = le.fit_transform(data[col])
 
+enc = OneHotEncoder(sparse = False)
+columns = ['Embarked','Title','Deck']
+for col in columns:   
+    enc.fit(data[[col]])
+    temp = enc.fit_transform(data[[col]])
+    temp = pd.DataFrame(temp, columns=[col+'_'+str(i) for i in data[col].value_counts().index])
+    temp = temp.drop(temp.columns[[0]], axis = 1)
+    data = pd.concat([data,temp], axis = 1)
 #Discard Unused Columns
-data = data.drop(['Name','Ticket','Cabin','PassengerId'], axis = 1)
+data = data.drop(['Name','Ticket','Cabin','PassengerId','Embarked','Title','Deck'], axis = 1)
 #Train Test Split
-train, intermediate_set = cross_validation.train_test_split(data, train_size=0.6, test_size=0.4)
-cv, test = cross_validation.train_test_split(intermediate_set, train_size=0.5, test_size=0.5)
+X = data.drop('Survived', axis = 1)
+y = data['Survived']
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.2)
+
+###
+#Modeling
+###
+#Random Forest Classifier
+from sklearn.ensemble import RandomForestClassifier
+classifier = RandomForestClassifier(n_estimators = 5, bootstrap = True, criterion = 'entropy')
+classifier.fit(X_train, y_train)
+y_pred = classifier.predict(X_test)
